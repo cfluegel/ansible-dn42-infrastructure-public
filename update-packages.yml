@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: no
+  remote_user: root
+
+  tasks:
+    - apt:
+        update_cache: yes
+
+    - apt:
+        update_cache: yes
+        upgrade: safe

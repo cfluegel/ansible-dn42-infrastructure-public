@@ -1,0 +1,10 @@
+all:
+  children:
+    production:
+      hosts:
+        dn42-de-fkb-1.wxmn.net:
+        dn42-de-fsn1dc8-1.wxmn.net:
+        dn42-ca-bhs-1.wxmn.net:
+    routers:
+      children:
+        production:

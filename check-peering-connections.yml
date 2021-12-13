@@ -1,0 +1,29 @@
+---
+- hosts: all
+  remote_user: root
+  gather_facts: no
+
+  tasks:
+    - copy:
+        src: bgp-community.rb
+        dest: /tmp/bgp-community.rb
+        owner: root
+        group: root
+        mode: '0700'
+
+    - apt:
+        name:
+          - ruby
+        state: present
+        update_cache: yes
+
+    - shell:
+        cmd: "ruby /tmp/bgp-community.rb {{ newpeerip }} {{ dn42_filter_interface_speed }} pfs"
+      register: measurement
+
+    - local_action:
+        module: copy
+        content: "{{ measurement.stdout }}"
+        dest: "tmp/dn42-newpeer-result-{{ inventory_hostname }}.txt"
+
+

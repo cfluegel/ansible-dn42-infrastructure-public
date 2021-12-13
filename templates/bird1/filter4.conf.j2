@@ -1,0 +1,22 @@
+function is_valid_network() {
+  return net ~ [
+{% for net in valid_networks_ipv4 %}
+    {{ net }}{% if valid_networks_ipv4|length > 1 and not loop.last  %},{% endif %}{{''}}
+{% endfor %}
+  ];{{''}}
+}
+
+function iBGP_import_peer_policy() {
+  if source != RTS_BGP then return false;
+  if bgp_path.len > 64 then return false;
+  if is_self_net() then return false;
+  return true;                                  # Allow all on iBGP Links
+};
+
+function iBGP_export_peer_policy() {
+  if source != RTS_BGP then return false;
+  if bgp_path.len > 64 then return false;
+  if is_self_net() then return false;
+  return true;                                  # Allow all on iBGP Links
+};
+

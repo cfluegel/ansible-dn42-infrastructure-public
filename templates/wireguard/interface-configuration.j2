@@ -1,0 +1,51 @@
+auto {{ item.interface }}
+
+{% if item.bgp.ipv4 is defined %}
+iface {{ item.interface }} inet static
+	address {{ dn42_ipv4.split("/")[0] }}
+	pointopoint {{ item.bgp.ipv4.split("/")[0] }}
+	pre-up ip link add {{ item.interface }} type wireguard
+	pre-up wg setconf {{ item.interface }} /etc/wireguard/AS{{ item.asn }}_{{ item.nick }}.conf
+{% if item.bgp.ipv6_p2p == false %}
+	post-up ip -6 addr add {{ item.ipv6linklocal | default(wireguard.ipv6linklocal) }} dev {{ item.interface }}
+{% endif %}
+	post-up /usr/sbin/be_router.sh
+	post-down ip link del {{ item.interface }}
+
+{% if item.bgp.ipv6_p2p == true %}
+iface {{ item.interface }} inet6 static
+{% if item.bgp.ipv6 | ipaddr('fe80::/10') | ipaddr('bool') %}
+	address {{ item.ipv6linklocal | default(wireguard.ipv6linklocal) }}
+{% else %}
+	address {{ dn42_ipv6 }}
+{% endif %}
+	pointopoint {{ item.bgp.ipv6.split("/")[0] }}/128
+{% endif %}
+
+{% else %}
+## IPV6 only
+{% if item.bgp.customtunnel is defined %}
+iface {{ item.interface }} inet6 static
+	address {{ item.bgp.customtunnel.localipv6 }}
+	pointopoint {{ item.bgp.ipv6 }}
+	pre-up ip link add {{ item.interface }} type wireguard
+	pre-up wg setconf {{ item.interface }} /etc/wireguard/AS{{ item.asn }}_{{ item.nick }}.conf
+	post-up /usr/sbin/be_router.sh
+	post-down ip link del {{ item.interface }}
+{% else %}
+iface {{ item.interface }} inet6 static
+	address {{ dn42_ipv6 }}
+{% if item.bgp.ipv6 | ipaddr('fd00::/8') | ipaddr('bool') %}
+	pointopoint {{ item.bgp.ipv6.split("/")[0] }}/128
+{% endif %}
+	pre-up ip link add {{ item.interface }} type wireguard
+	pre-up wg setconf {{ item.interface }} /etc/wireguard/AS{{ item.asn }}_{{ item.nick }}.conf
+{% if item.bgp.ipv6 | ipaddr('fe80::/10') | ipaddr('bool') %}
+ 	post-up ip -6 addr add {{ item.ipv6linklocal | default(wireguard.ipv6linklocal) }} dev {{ item.interface }}
+{% endif %}
+	post-up /usr/sbin/be_router.sh
+	post-down ip link del {{ item.interface }}
+
+{% endif %}
+{% endif %}
+

@@ -1,0 +1,96 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - apt:
+        name:
+          - munin-node
+          - libcommon-sense-perl
+        state: present
+
+    - service:
+        name: munin-node
+        enabled: yes
+        state: stopped
+
+    - template:
+        src: munin/munin-node.conf.j2
+        dest: /etc/munin/munin-node.conf
+
+    - copy:
+        content: |
+          [bird]
+          user root
+          env.protocols BGP
+          env.socket /var/run/bird/bird.ctl
+
+          [bird6]
+          user root
+          env.protocols BGP
+          env.socket /var/run/bird/bird6.ctl
+        dest: /etc/munin/plugin-conf.d/bird
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: deploy bird munin plugin
+      copy:
+        src: munin-node/bird
+        dest: /usr/share/munin/plugins/
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Deactivate all plugins
+      shell:
+        cmd: rm -f /etc/munin/plugins/*
+        warn: False
+
+    - name: Activate default dn42 plugins
+      file:
+        state: link
+        src: /usr/share/munin/plugins/{{ item }}
+        dest: /etc/munin/plugins/{{ item }}
+        group: root
+        owner: root
+      with_items:
+        - fail2ban
+        - cpu
+        - entropy
+        - forks
+        - fw_packets
+        - load
+        - memory
+        - threads
+        - uptime
+
+    - name: Activate bird munin plugins
+      file:
+        state: link
+        src: /usr/share/munin/plugins/bird
+        dest: /etc/munin/plugins/{{ item }}
+        group: root
+        owner: root
+      with_items:
+        - bird
+        - bird6
+
+    - name: Ping each of my own nodes
+      file:
+        state: link
+        src: /usr/share/munin/plugins/ping_
+        dest: "/etc/munin/plugins/ping_{{ item.key }}"
+      with_dict: "{{ hostvars }}"
+
+    - name: create ping graphs for every active peer connection
+      file:
+        state: link
+        src: /usr/share/munin/plugins/ping_
+        dest: "/etc/munin/plugins/ping_{{ item.wireguard.endpoint.split(':')[0] }}"
+      with_items: "{{ peers }}"
+
+    - service:
+        name: munin-node
+        enabled: yes
+        state: started

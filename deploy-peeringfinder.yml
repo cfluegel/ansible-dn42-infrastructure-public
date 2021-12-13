@@ -1,0 +1,32 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - copy:
+        src: generic-linux-debian-redhat-busybox.sh
+        dest: /usr/local/bin/dn42-peeringfinder.sh
+        mode: '0774'
+        owner: root
+        group: root
+      when:
+        - peeringfinder is defined
+        - peeringfinder.uuid is defined
+
+    - cron:
+        name: UUID
+        env: yes
+        job: "{{ peeringfinder.uuid }}"
+        state: present
+      when:
+        - peeringfinder is defined
+        - peeringfinder.uuid is defined
+    - cron:
+        name: "Peeringfinder"
+        job: "/usr/local/bin/dn42-peeringfinder.sh"
+        minute: "*/5"
+        state: present
+      when:
+        - peeringfinder is defined
+        - peeringfinder.uuid is defined
+

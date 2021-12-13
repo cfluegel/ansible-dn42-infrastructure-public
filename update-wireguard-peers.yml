@@ -1,0 +1,64 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - name: Gather the current wireguard peers
+      find:
+        paths: "/etc/network/dn42peers/"
+        recurse: no
+      register: current_wireguard_interfaces
+
+# TODO: Find a way to shutdown only interfaces that are actually up.
+#       The easiest would be to have something in the shell cmd...
+
+    - name: Shutdown the current connections
+      shell:
+        cmd: "/sbin/ifdown {{ item.path.split('/')[-1] }}"
+      ignore_errors: yes
+      with_items:
+        - "{{ current_wireguard_interfaces.files }}"
+
+    - name: remove all previous wireguard configurations
+      shell:
+        cmd: rm -f /etc/wireguard/*
+        warn: no
+
+    - name: remove all previous interfaces configurations
+      shell:
+        cmd: rm -f /etc/network/dn42peers/*
+        warn: no
+
+    - name: create wireguard configuration files
+      template:
+        src: "wireguard/configuration.j2"
+        dest: "/etc/wireguard/AS{{ item.asn }}_{{ item.nick }}.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      with_items: "{{ peers }}"
+      when:
+        - peers is defined
+        - item.bgp is defined
+        - item.wireguard is defined
+
+    - name: Create interface files for the wireguard connection
+      template:
+        src: "wireguard/interface-configuration.j2"
+        dest: "/etc/network/dn42peers/{{ item.interface }}"
+        owner: root
+        group: root
+        mode: '0644'
+      with_items: "{{ peers }}"
+      when:
+        - peers is defined
+        - item.bgp is defined
+        - item.wireguard is defined
+
+    - name: Bring interface and wireguard connections up
+      shell: "/sbin/ifup {{ item.interface }}"
+      with_items: "{{ peers }}"
+      when:
+        - peers is defined
+        - item.bgp is defined
+        - item.interface is defined

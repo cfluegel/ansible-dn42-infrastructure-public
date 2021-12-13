@@ -1,0 +1,14 @@
+router id {{ dn42_ipv4.split("/")[0] }};
+
+define OWNAS = {{ ASN }};
+define OWNIP = {{ dn42_ipv6.split("/")[0] }};
+define DN42_REGION = {{ dn42_region }};
+
+function is_self_net() {
+  return net ~ [
+{% for net in dn42_ipv6_nets %}
+    {{ net }}{% if dn42_ipv6_nets|length > 1 and not loop.last  %},{% endif %}{{''}}
+{% endfor %}
+  ];{{''}}
+}
+

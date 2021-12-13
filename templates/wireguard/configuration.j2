@@ -1,0 +1,19 @@
+[Interface]
+ListenPort  = {{ item.wireguard.listenport }}
+PrivateKey = {{ wireguard.privatekey }}
+
+[Peer]
+Endpoint = {{ item.wireguard.endpoint }}
+PublicKey = {{ item.wireguard.pubkey }}
+{% if item.wireguard.allow_everything is defined and item.wireguard.allow_everything is sameas true %}
+AllowedIPs = 0.0.0.0/0
+AllowedIPs = ::/0
+{% else %}
+AllowedIPs = 172.16.0.0/12
+AllowedIPs = 10.0.0.0/8
+AllowedIPs = fd00::/8
+AllowedIPs = fe80::/10
+{% endif %}
+{% if item.wireguard.keepalive is defined %}
+PersistentKeepalive = {{ item.wireguard.keepalive }}{{''}}{{''}}
+{% endif %}

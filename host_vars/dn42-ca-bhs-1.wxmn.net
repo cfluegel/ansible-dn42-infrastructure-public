@@ -1,0 +1,81 @@
+---
+ifupdown: 2
+bird_version: 1
+
+fastd_secret: "---secret---"
+fastd_public: "---secret---"
+fastd_inet_address: "192.168.253.3/24"
+fastd_inet6_address: "fe80::ff44:300/64"
+
+dn42_ipv4: "172.22.127.68/32"
+dn42_ipv6: "fd16:fb99:7f9b::4/128"
+dn42_region: 41
+
+dn42_filter_interface_speed: 100
+
+wireguard:
+  privatekey: "---secret---"
+  publickey: "---secret---"
+  ipv6linklocal: "fe80::42:22:400/64"
+
+peeringfinder:
+  uuid: ---secret-uid--- 
+
+peers:
+  - asn: 4242421588
+    nick: chrismoos
+    interface: wg-chrismoos1
+    ipv6linklocal: fe80::100/64
+    wireguard:
+      listenport: 21588
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.16.143/32
+      ipv6: fe80::1588/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 4242420880
+    nick: marropax
+    interface: wg-marropax1
+    wireguard:
+      listenport: 20880
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.21.106.113/32
+      ipv6: fe80::cafe/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 3, 24, 34
+      filterexport: 3, 24, 34
+  - asn: 4242422752
+    nick: deltadelta
+    interface: wg-deltadelta1
+    wireguard:
+      listenport: 22752
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.21.93.65/32
+      ipv6: fe80::42:2227:1/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 1, 24, 34
+      filterexport: 1, 24, 34
+  - asn: 4242421080
+    nick: jlu5
+    interface: wg-jlu51
+    wireguard:
+      listenport: 21080
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.229.115/32
+      ipv6: fe80::115/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 1, 24, 34
+      filterexport: 1, 24, 34

@@ -1,0 +1,35 @@
+---
+ifupdown: 2
+bird_version: 1
+
+fastd_secret: 
+fastd_public: 
+fastd_inet_address: "192.168.253.5/24"
+fastd_inet6_address: "fe80::ff44:500/64"
+
+dn42_ipv4: "172.22.127.69/32"
+dn42_ipv6: "fd16:fb99:7f9b::5/128"
+dn42_region: 52
+
+dn42_filter_interface_speed: 100
+
+wireguard:
+  privatekey: 
+  ipv6linklocal: "fe80::42:22:500/64"
+
+peeringfinder:
+  uuid: 
+
+peers:
+  - asn: 4242420112
+    nick: mebus
+    interface: wg-mebus1
+    wireguard:
+      listenport: 20112
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv6: fd88:c7e:c7b7:12::2227/128
+      filterimport: 6, 24, 34
+      filterexport: 6, 24, 34

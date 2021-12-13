@@ -1,0 +1,7 @@
+auto lo
+iface lo inet static
+    address {{ dn42_ipv4 }}
+iface lo inet6 static
+    address {{ dn42_ipv6 }}
+    up ip -6 a a fe80::666/128 dev lo
+

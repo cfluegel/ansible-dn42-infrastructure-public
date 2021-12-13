@@ -1,0 +1,136 @@
+---
+ifupdown: 2
+bird_version: 1
+
+fastd_secret: ""
+fastd_public: ""
+fastd_inet_address: "192.168.253.2/24"
+fastd_inet6_address: "fe80::ff44:200/64"
+
+dn42_ipv4: "172.22.127.66/32"
+dn42_ipv6: "fd16:fb99:7f9b::2/128"
+dn42_region: 41
+
+dn42_filter_interface_speed: 1000
+
+wireguard:
+  privatekey: ""
+  publickey: ""
+  ipv6linklocal: "fe80::42:22:200/64"
+
+peeringfinder:
+  uuid: 
+
+peers:
+  - asn: 4242422341
+    nick: zotan
+    interface: wg-zotan1
+    wireguard:
+      listenport: 22341
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.20.177.33/32
+      ipv6: fe80::2342/128
+      ipv6_p2p: true
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34
+  - asn: 4242421722
+    nick: tchekda
+    interface: wg-tchekda1
+    wireguard:
+      listenport: 21722
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.20.4.100/32
+      ipv6: fe80::1722:100/128
+      ipv6_p2p: false
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 4242423088
+    nick: sunnet
+    interface: wg-sunnet1
+    wireguard:
+      listenport: 23088
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.21.100.195/32
+      ipv6: fe80::3088:195/128
+      ipv6_p2p: false
+      filterimport: 2,25,33
+      filterexport: 2,25,33
+  - asn: 4242423914
+    nick: kioubit
+    interface: wg-kioubit1
+    wireguard:
+      listenport: 23914
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.20.53.97/32
+      ipv6: fe80::ade0/128
+      ipv6_p2p: true
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 4242423934
+    nick: graffen
+    interface: wg-graffen1
+    wireguard:
+      listenport: 23934
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.20.170.192/32
+      ipv6: fe80::42:1000/128
+      ipv6_p2p: false
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 4242422904
+    nick: doxz
+    interface: wg-doxz1
+    wireguard:
+      listenport: 22904
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.22.159.62/32
+      ipv6: fdfc:694e:234f::aff1/128
+      ipv6_p2p: true
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34
+  - asn: 4242422601
+    nick: burble
+    interface: wg-burble1
+    wireguard:
+      listenport: 22601
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.20.129.169/32
+      ipv6: fd42:4242:2601:31::1/128
+      ipv6_p2p: true
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 76190
+    nick: tbspace
+    interface: wg-tbspace1
+    wireguard:
+      listenport: 26190
+      pubkey: 
+      endpoint: 
+    bgp:
+      multiprotocol: false
+      ipv4: 172.23.235.1/32
+      ipv6: fe80::1299:e/128
+      ipv6_p2p: false
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34

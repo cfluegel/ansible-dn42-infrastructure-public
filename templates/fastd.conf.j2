@@ -1,0 +1,24 @@
+log level warn;
+hide ip addresses yes;
+hide mac addresses yes;
+
+interface "{{ fastd_interface_name }}";
+bind any:{{ fastd_port }};
+
+method "salsa2012+umac";
+
+include "secrets.conf"; 
+mtu {{ fastd_mtu }}; 
+
+include peers from "peers"; 
+on up "
+  ip link set up dev $INTERFACE
+  ip link set mtu {{ fastd_mtu }} dev $INTERFACE 
+  ip address add {{ fastd_inet_address }} dev $INTERFACE 
+  ip -6 address add {{ fastd_inet6_address }} dev $INTERFACE
+";
+on down "
+  ip link set down dev $INTERFACE
+"; 
+
+status socket "/var/run/fastd-{{ ASN }}.status";

@@ -1,0 +1,51 @@
+- hosts: all
+  remote_user: root
+  
+  tasks:
+  - apt:
+      name:
+        - fastd
+      state: present
+      update_cache: yes
+
+  - file:
+      path: "/etc/fastd/{{ ASN }}"
+      state: directory
+      mode: 0755
+
+  - file:
+      path: "/etc/fastd/{{ ASN }}/peers/"
+      state: directory
+      mode: 0755
+
+  - name: "Create peer files"
+    template:
+      src: fastd-host.j2
+      dest: "/etc/fastd/{{ ASN }}/peers/{{ item.key }}"
+      group: root
+      owner: root
+      mode: '0640'
+    with_dict: "{{ hostvars }}"
+
+  - template:
+      src: fastd.conf.j2
+      dest: "/etc/fastd/{{ ASN }}/fastd.conf"
+      group: root
+      owner: root
+      mode: '0640'
+
+  - template:
+      src: secrets.conf.j2
+      dest: "/etc/fastd/{{ ASN }}/secrets.conf"
+      group: root
+      owner: root
+      mode: '0640'
+
+  - service:
+      name: "fastd@{{ ASN }}"
+      enabled: yes
+
+  - service:
+      name: "fastd@{{ ASN }}"
+      state: restarted
+

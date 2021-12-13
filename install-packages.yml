@@ -1,0 +1,76 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - name: "Add buster backports repo"
+      apt_repository:
+        repo: deb http://deb.debian.org/debian buster-backports main
+        state: present
+        filename: buster-backports.list
+    - name: Install bird apt key
+      apt_key:
+        state: present
+        keyserver: keyserver.ubuntu.com
+        id: B188E2B695BD4743
+    - name: "Add bird repo"
+      apt_repository:
+        repo: deb http://bird.network.cz/debian/ buster main
+        state: present
+        filename: bird.list
+    - shell:
+        cmd: "uname -r"
+      register: current_kernel_release
+    - name: "Install packages"
+      apt:
+        name:
+          - apt-transport-https
+          - aptitude
+          - gnupg2
+          - fail2ban
+          - munin-node
+          - iproute2
+          - ruby
+          - curl
+          - build-essential
+          - "linux-headers-{{ current_kernel_release.stdout }}"
+          - libcommon-sense-perl
+          - mtr
+        update_cache: yes
+        state: present
+    - name: "Install wireguard out of buster backports"
+      apt:
+        name:
+          - wireguard
+          - wireguard-dkms
+          - wireguard-tools
+        state: present
+        update_cache: yes
+        default_release: buster-backports
+    - name: "Install ifupdown1 "
+      apt:
+        name:
+          - ifupdown
+        update_cache: yes
+        state: present
+      when:
+        - ifupdown == 1
+    - name: "Install ifupdown2"
+      apt:
+        name:
+          - ifupdown2
+        update_cache: yes
+        state: present
+      when:
+        - ifupdown == 2
+
+    - name: Reboot immediately if there was a change.
+      shell: "sleep 5 && reboot"
+      async: 1
+      poll: 0
+
+    - wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: 300

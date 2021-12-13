@@ -1,0 +1,19 @@
+---
+ifupdown: 2
+bird_version: 1
+
+fastd_secret: 
+fastd_public: 
+fastd_inet_address: "192.168.253.4/24"
+fastd_inet6_address: "fe80::ff44:400/64"
+
+dn42_ipv4: "172.22.127.67/32"
+dn42_ipv6: "fd16:fb99:7f9b::3/128"
+dn42_region: 41
+
+linklocal_ipv6: "fe80::42:22:300/128"
+
+dn42_filter_interface_speed: 1000
+
+peers:
+  -

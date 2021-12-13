@@ -1,0 +1,6 @@
+protocol bgp AS{{ item.asn }}_{{ item.nick }} from eBGP_Peer {
+  neighbor {{ item.bgp.ipv4.split("/")[0] }} as {{ item.asn }};
+
+  import where dn42_import_filter({{ item.bgp.filterimport }});
+  export where dn42_export_filter({{ item.bgp.filterexport }});
+};

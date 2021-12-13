@@ -1,0 +1,138 @@
+---
+ifupdown: 2
+bird_version: 1
+
+fastd_secret: ""
+fastd_public: ""
+fastd_inet_address: "192.168.253.1/24"
+fastd_inet6_address: "fe80::ff44:100/64"
+
+dn42_ipv4: "172.22.127.65/32"
+dn42_ipv6: "fd16:fb99:7f9b::1/128"
+dn42_region: 41
+
+dn42_filter_interface_speed: 100
+
+wireguard:
+  privatekey: ""
+  publickey: ""
+  ipv6linklocal: "fe80::42:22:100/64"
+
+peeringfinder:
+  uuid: 
+
+peers:
+  - asn: 4242422341
+    nick: zotan
+    interface: wg-zotan1
+    wireguard:
+      listenport: 22341
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.177.34/32
+      ipv6: fe80::3/128
+      ipv6_p2p: true
+      multiprotocol: false
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34
+  - asn: 4242423929
+    nick: v0tti
+    interface: wg-v0tti1
+    wireguard:
+      listenport: 23929
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv6: fe80::42:22:101/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 3, 25, 34
+      filterexport: 3, 25, 34
+  - asn: 4242422237
+    nick: munsternet
+    interface: wg-munsternet1
+    wireguard:
+      listenport: 22237
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv6: fe80::42:2227:1/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 3, 25, 34
+      filterexport: 3, 25, 34
+  - asn: 4242420181
+    nick: mgl
+    interface: wg-mgl1
+    wireguard:
+      listenport: 20181
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.48.129/32
+      ipv6: fe80::181:1/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 3, 25, 34
+      filterexport: 3, 25, 34
+  - asn: 4242421231
+    nick: inrin
+    interface: wg-inrin1
+    wireguard:
+      listenport: 21231
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.172.17/32
+      ipv6: fe80::2227/128
+      ipv6_p2p: true
+      multiprotocol: false
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34
+  - asn: 4242422225
+    nick: maraun
+    interface: wg-maraun1
+    wireguard:
+      listenport: 22225
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.12.196/32
+      ipv6: fe80::1/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34
+  - asn: 4242421588
+    nick: chrismoos
+    interface: wg-chrismoos1
+    ipv6linklocal: fe80::100/64
+    wireguard:
+      listenport: 21588
+      pubkey: 
+      endpoint: 
+    bgp:
+      ipv4: 172.20.16.141/32
+      ipv6: fe80::1588/128
+      ipv6_p2p: false
+      multiprotocol: false
+      filterimport: 2, 25, 34
+      filterexport: 2, 25, 34
+  - asn: 64738
+    nick: welterde
+    interface: wg-welterde1
+    ipv6linklocal: fdef:5d0d:ee12:0805:f:fcde:39d3:2/112
+    wireguard:
+      listenport: 64738
+      pubkey: 
+      endpoint: 
+      allow_everything: true
+    bgp:
+      customtunnel:
+        localipv6: fdef:5d0d:ee12:0805:f:fcde:39d3:2/112
+      multiprotocol: false
+      ipv6: fdef:5d0d:ee12:0805:f:fcde:39d3:1/112
+      ipv6_p2p: false
+      filterimport: 1, 25, 34
+      filterexport: 1, 25, 34

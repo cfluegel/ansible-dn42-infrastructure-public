@@ -1,0 +1,78 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - file:
+        state: directory
+        path: "/etc/bird/peers4"
+        owner: bird
+        group: bird
+        mode: '0755'
+    - file:
+        state: directory
+        path: "/etc/bird/peers6"
+        owner: bird
+        group: bird
+        mode: '0755'
+
+    - shell:
+        cmd: "rm -f /etc/bird/peers4/*"
+        warn: no
+    - shell:
+        cmd: "rm -f /etc/bird/peers6/*"
+        warn: no
+
+    - name: Create ipv4 peers
+      template:
+        src: bird1/peerfile-ipv4.j2
+        dest: "/etc/bird/peers4/AS{{ item.asn }}_{{ item.nick }}"
+        owner: root
+        group: root
+        mode: '0644'
+      with_items: "{{ peers }}"
+      when:
+        - peers is defined
+        - item.asn is defined
+        - item.bgp is defined
+        - item.bgp.ipv4 is defined
+
+    - name: Create ipv6 peers
+      template:
+        src: bird1/peerfile-ipv6.j2
+        dest: "/etc/bird/peers6/AS{{ item.asn }}_{{ item.nick }}"
+      with_items: "{{ peers }}"
+      when:
+        - peers is defined
+        - item.asn is defined
+        - item.bgp is defined
+        - item.bgp.ipv6 is defined
+
+    - name: collect facts about services
+      service_facts:
+
+    - service:
+        name: "bird"
+        enabled: yes
+        state: started
+      when:
+        - bird_version == 1
+    - service:
+        name: "bird6"
+        enabled: yes
+        state: started
+      when:
+        - bird_version == 1
+
+    - name: reload bird ipv4 configuration
+      shell: birdc configure
+      when:
+        - bird_version == 1
+        - ansible_facts.services.bird
+        - ansible_facts.services.bird.state == "running"
+    - name: reload bird ipv6 configuration
+      shell: birdc6 configure
+      when:
+        - bird_version == 1
+        - ansible_facts.services.bird6
+        - ansible_facts.services.bird6.state == "running"

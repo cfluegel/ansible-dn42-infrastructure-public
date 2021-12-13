@@ -1,0 +1,90 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - copy:
+        src: "99-zzz-dn42.conf"
+        dest: "/etc/sysctl.d/"
+        mode: '0644'
+        owner: root
+        group: root
+    - copy:
+        src: be_router.sh
+        dest: /usr/sbin/
+        mode: '0744'
+        owner: root
+        group: root
+
+    - name: store my GPG SSH Key
+      authorized_key:
+        user: root
+        state: present
+        key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDGSGlxCdB+kjkCeCxZAYDKBfLmdiuZ/ZHkCGINgem29mkwF6BkhIFjMChCGvsqZIQ4neQKYLQY3alkDjLqB3wy4dnIvUsCANwyMipQtO4apFiVdTg5wi4Hk+CwOJtjkky8AtY7c4+nefNjSNfQxp1zm6md4m1OaWRuxPtQywGeOSxEB/OgHRzvaV8rxb/JeIresTGDHOoEppFMsE7c6Lr0f0jlpJvXRxx5ZxToGLSa8ju9wX49wCrxdfh/RuTr5TQRmIH/J4lVTw9GMMr18TOCpaTLjBohIblLSYITL6Ce1dFhpiBRHYpE0mBnradO5ZvYPP0FI+nEoNcoB655xugNepxM6UuaNTNf3Tj9l04VGKv3jdRF5g1RRQxXQHWrxHvF+/FrQXeQjzOCTeAKKHFPy8jZ38QtHMOogHurzN6AYlZALGP6uk1RtoYxmYFvgwRXF+/np53fIrBSe+DjQTZKNDWrTN0uaPvK4vM8p6R2tQZerXhlVHT0A4DlRa6b3x8DZSDaiuizSLT2+2RX458t5sSCQ5xOZUz2U4jkwZ6AQIA6MCWsfsQ4/esxTlrQ9rNo6POeWrtKyaDkNyJSgiDdjnTyX5X9Dan0EqtIKZOWdwXzesPfsSk7qG2+fTooVobo2KgVZ3YZ68WCBYFu5sTkxfj1RhLlJRF5pE4K736V6w== openpgp:0x3957D9DF'
+    - name: store my notebook SSH Key
+      authorized_key:
+        user: root
+        state: present
+        key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINewPvxOHO13C96eul6rBrcfU4f7v3dA4lFXH7+sHHd9 cfluegel@skathi'
+    - name: deactivate password authentication
+      lineinfile:
+        dest=/etc/ssh/sshd_config
+        regexp='^PasswordAuthentication'
+        line="PasswordAuthentication no"
+        state=present
+        backup=yes
+    - name: disallow password login to the root
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: '^PermitRootLogin'
+        line: "PermitRootLogin prohibit-password"
+        state: present
+        backup: yes
+    - service:
+        name: sshd
+        state: restarted
+
+  ### DN42 IP Adresses
+    - name: create directory for dn42 interface files
+      file:
+        path: /etc/network/dn42peers/
+        owner: root
+        group: root
+        state: directory
+    - name: add the import line to the main interface files
+      lineinfile:
+        dest: "/etc/network/interfaces"
+        insertafter: EOF
+        regexp: "^source /etc/network/dn42peers/*"
+        line: "source /etc/network/dn42peers/*"
+        state: present
+
+    - name: Activate the including of files from interfaces.d
+      lineinfile:
+        dest: "/etc/network/interfaces"
+        line: "source /etc/network/interfaces.d/*"
+        state: present
+        regexp: "^(#)?(.*)source /etc/network/interfaces.d/"
+        insertbefore: "^#(.*)source /etc/network/interfaces.d/"
+    - name: "Store interface configuration for interface lo"
+      template:
+        src: templates/dn42-lo-ifupdown2.j2
+        dest: "/etc/network/interfaces.d/dn42-lo"
+        group: root
+        owner: root
+      when:
+        - ifupdown == 2
+    - name: "Store interface configuration for interface lo"
+      template:
+        src: templates/dn42-lo-ifupdown1.j2
+        dest: "/etc/network/interfaces.d/dn42-lo"
+        group: root
+        owner: root
+      when:
+        - ifupdown == 1
+    - name: "Bring interface lo down"
+      shell:
+        cmd: ifdown lo
+    - name: "bring interface lo up"
+      shell:
+        cmd: ifup lo

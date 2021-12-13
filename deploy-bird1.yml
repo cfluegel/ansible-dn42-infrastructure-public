@@ -1,0 +1,131 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - block:
+      - name: "Host is configured for bird2"
+        debug:
+          msg: "Host is configured for bird2"
+
+      - meta: end_play
+      when:
+        - bird_version == 2
+
+    - name: "Make sure bird2 is not on the system"
+      apt:
+        name:
+          - bird2
+        update_cache: yes
+        state: absent
+    - name: "install bird if it hasnt been installed yet"
+      apt:
+        name:
+          - bird
+        update_cache: yes
+        state: present
+
+    - service:
+        name: "bird"
+        state: stopped
+    - service:
+        name: "bird6"
+        state: stopped
+
+    - file:
+        state: directory
+        path: "/var/lib/bird/"
+        owner: bird
+        group: bird
+        mode: '0755'
+
+    - name: "Enable RoA Download (ipv4)"
+      cron:
+        name: "dn42 roa ipv4"
+        minute: "*/15"
+        job: "curl -sfSLR -o/var/lib/bird/bird_roa_dn42.conf -z/var/lib/bird/bird_roa_dn42.conf https://dn42.tech9.io/roa/bird_roa_dn42.conf && birdc configure"
+        state: present
+    - name: "Initial Download of RoA file (ipv4)"
+      get_url:
+        url: https://dn42.tech9.io/roa/bird_roa_dn42.conf
+        dest: "/var/lib/bird/bird_roa_dn42.conf"
+        mode: '0644'
+
+    - name: "Enable RoA Download (ipv6)"
+      cron:
+        name: "dn42 roa ipv6"
+        minute: "*/15"
+        job: "curl -sfSLR -o/var/lib/bird/bird6_roa_dn42.conf -z/var/lib/bird/bird6_roa_dn42.conf https://dn42.tech9.io/roa/bird6_roa_dn42.conf && birdc6 configure"
+        state: present
+    - name: "Initial Download of RoA file (ipv6)"
+      get_url:
+        url: "https://dn42.tech9.io/roa/bird6_roa_dn42.conf"
+        dest: "/var/lib/bird/bird6_roa_dn42.conf"
+        mode: '0644'
+
+    - template:
+        src: "bird1/bird.conf.j2"
+        dest: "/etc/bird/bird.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/bird6.conf.j2"
+        dest: "/etc/bird/bird6.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/filter4.conf.j2"
+        dest: "/etc/bird/filter4.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/filter6.conf.j2"
+        dest: "/etc/bird/filter6.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/local4.conf.j2"
+        dest: "/etc/bird/local4.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/local6.conf.j2"
+        dest: "/etc/bird/local6.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+    - template:
+        src: "bird1/community_filters.conf.j2"
+        dest: "/etc/bird/community_filters.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+
+    - name: "Create peer directory for ipv4"
+      file:
+        state: directory
+        path: "/etc/bird/peers4"
+        owner: bird
+        group: bird
+        mode: '0755'
+    - name: "Create peer directory for ipv6"
+      file:
+        state: directory
+        path: "/etc/bird/peers6"
+        owner: bird
+        group: bird
+        mode: '0755'
+
+    - service:
+        name: "bird"
+        enabled: yes
+        state: started
+    - service:
+        name: "bird6"
+        enabled: yes
+        state: started

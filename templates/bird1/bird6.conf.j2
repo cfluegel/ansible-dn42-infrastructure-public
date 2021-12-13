@@ -1,0 +1,113 @@
+protocol device {
+  scan time 10;
+}
+
+include "/etc/bird/local6.conf";
+
+protocol static S_STATIC {
+{% for net in dn42_ipv6_nets %}
+  route {{ net.replace("+"," ") }} reject;{{''}}
+{% endfor %}
+  import all;
+  export none;
+}
+
+table ospf_routes;
+
+protocol ospf O_OSPF {
+  table ospf_routes;
+
+  area 0 {
+    interface "lo" {
+      stub;
+    };
+
+    interface "internal" {
+      hello 5;
+      retransmit 2;
+      wait 10;
+      dead 60;
+    };
+  };
+}
+
+protocol pipe ospf_import {
+  table ospf_routes;
+  peer table master;
+  export filter {
+    if is_self_net() then {
+      accept;
+    }
+    reject;
+  };
+  import none;
+}
+
+roa table dn42_roa {
+  include "/var/lib/bird/bird6_roa_dn42.conf";
+};
+
+# filter helpers
+#################
+include "/etc/bird/filter6.conf";
+include "/etc/bird/community_filters.conf";
+
+# Kernel routing tables
+########################
+
+protocol kernel {
+  scan time 20;
+  device routes;
+  import keep filtered;
+  export filter {
+    if source = RTS_STATIC then reject;
+    krt_prefsrc = OWNIP;
+    accept;
+  };
+}
+
+template bgp BGP_Base {
+  local as OWNAS;
+  import keep filtered;
+};
+
+template bgp dnpeers from BGP_Base {
+};
+
+template bgp eBGP_Peer from BGP_Base {
+  direct;
+  path metric 1;
+  import filter {
+    print "WARNING!! no community import filter set, all routes will be rejected";
+    reject;
+  };
+  export filter {
+    print "WARNING!! no community import filter set, all routes will be rejected";
+    reject;
+  };
+  import limit 10000 action block;
+  export limit 10000 action block;
+
+};
+
+template bgp iBGP_Peer from BGP_Base {
+  igp table ospf_routes;
+
+  next hop self;
+
+  import where iBGP_import_peer_policy();
+  export where iBGP_export_peer_policy();
+
+  preference 50;
+};
+
+##### iBGP
+{% for key, value in hostvars.iteritems() if key != inventory_hostname %}
+protocol bgp ibgp_{{ key.replace("-","").split(".")[0] }} from iBGP_Peer {
+  neighbor {{ value.dn42_ipv6.split("/")[0] }} as OWNAS;
+}
+
+{% endfor %}
+
+##### Import eBGP Peers
+include "/etc/bird/peers6/*";

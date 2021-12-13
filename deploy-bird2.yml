@@ -1,0 +1,86 @@
+---
+- hosts: all
+
+  tasks:
+    - block:
+      - name: "Host is configured for bird1"
+        debug:
+          msg: "Host is configured for bird1"
+
+      - meta: end_play
+      when:
+        - bird_version == 1
+
+    - name: "Make sure bird1 is not on the system"
+      apt:
+        name:
+          - bird
+        update_cache: yes
+        state: absent
+    - name: "install bird2 if it hasnt been installed yet"
+      apt:
+        name:
+          - bird2
+        update_cache: yes
+        state: present
+
+    - service:
+        name: "bird2"
+        state: stopped
+
+    - file:
+        state: directory
+        path: "/var/lib/bird/"
+        owner: bird
+        group: bird
+        mode: '0755'
+    - name: "Enable RoA Download (ipv4)"
+      cron:
+        name: "dn42 roa ipv4"
+        minute: "*/15"
+        job: "curl -sfSLR -o/var/lib/bird/dn42_roa_bird2_4.conf -z/var/lib/bird/dn42_roa_bird2_4.conf https://dn42.burble.com/roa/dn42_roa_bird2_4.conf && birdc configure"
+        state: present
+    - name: "Initial Download of RoA file (ipv4)"
+      get_url:
+        url: https://dn42.burble.com/roa/dn42_roa_bird2_4.conf
+        dest: "/var/lib/bird/dn42_roa_bird2_4.conf"
+        mode: '0644'
+    - name: "Enable RoA Download (ipv6)"
+      cron:
+        name: "dn42 roa ipv6"
+        minute: "*/15"
+        job: "curl -sfSLR -o/var/lib/bird/dn42_roa_bird2_6.conf -z/var/lib/bird/dn42_roa_bird2_6.conf https://dn42.burble.com/roa/dn42_roa_bird2_6.conf && birdc6 configure"
+        state: present
+    - name: "Initial Download of RoA file (ipv6)"
+      get_url:
+        url: "https://dn42.burble.com/roa/dn42_roa_bird2_6.conf"
+        dest: "/var/lib/bird/dn42_roa_bird2_6.conf"
+        mode: '0644'
+
+    - template:
+        src: "bird2/bird.conf.j2"
+        dest: "/etc/bird/bird.conf"
+        owner: bird
+        group: bird
+        mode: '0640'
+
+
+    - name: "Create peer directory for ipv4"
+      file:
+        state: directory
+        path: "/etc/bird/peers4"
+        owner: bird
+        group: bird
+        mode: '0755'
+    - name: "Create peer directory for ipv6"
+      file:
+        state: directory
+        path: "/etc/bird/peers6"
+        owner: bird
+        group: bird
+        mode: '0755'
+
+    - service:
+        name: "bird2"
+        enabled: yes
+        state: started

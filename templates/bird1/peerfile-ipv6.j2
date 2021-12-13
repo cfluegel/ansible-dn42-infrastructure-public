@@ -1,0 +1,10 @@
+protocol bgp AS{{ item.asn }}_{{ item.nick }} from eBGP_Peer {
+{% if item.bgp.ipv6 | ipaddr('fe80::/10') | ipaddr('bool') %}
+  neighbor {{ item.bgp.ipv6.split("/")[0] }} % '{{ item.interface }}' as {{ item.asn }};
+{% else %}
+  neighbor {{ item.bgp.ipv6.split("/")[0] }} as {{ item.asn }};
+{% endif %}
+
+  import where dn42_import_filter({{ item.bgp.filterimport }});
+  export where dn42_export_filter({{ item.bgp.filterexport }});
+};
